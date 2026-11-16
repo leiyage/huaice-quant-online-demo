@@ -1,0 +1,13 @@
+/* Decorative globe overlay only; never intercepts pointer input. */
+.neural-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.globe-overlay{z-index:3}
+.neural-canvas[hidden]{display:none}
+.globe-controlbar,.globe-controlbar>div{flex-wrap:wrap}
+#globe-neural[aria-pressed=true]{color:#a3e2bc;border-color:#365e4d;background:#10251e}
+.globe-stage{background:radial-gradient(ellipse at 50% 50%,#102b21 0,#091c19 46%,#08151a 74%)}
+.globe-stage::before{border-color:#2c5e424f}
+.globe-stage::after{border-color:#2b664847}
+.neural-canvas{background:repeating-linear-gradient(0deg,transparent 0px,transparent 2px,rgba(2,8,13,.16) 2px,rgba(2,8,13,.16) 3px)}
+.globe-stage.neural-cinema{background:radial-gradient(ellipse at 50% 50%,#13262b 0,#0a151e 50%,#080e17 82%)}
+.globe-stage.neural-cinema::before{border-color:#68849326;border-style:dashed;inset:8% 17%;transform:rotate(-14deg)}
+.globe-stage.neural-cinema::after{border-color:#6e7c8f28;inset:10% 20%;transform:rotate(27deg)}

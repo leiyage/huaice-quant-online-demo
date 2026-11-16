@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{APP_NAME}} · {{APP_TAGLINE}}</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/collection.css">
+<link rel="stylesheet" href="/static/mode-switch.css">
+<script src="/static/mode-switch.js" defer></script>
+</head>
+<body>
+<header>
+  <h1>{{APP_NAME}}<span class="ver" id="verLabel">v{{VERSION}}</span></h1>
+  <span class="badge" style="border-color:rgba(61,220,151,.45);color:#8ff0c4">{{SCHOOL}} · {{APP_EN}}</span>
+  <span class="badge">{{SAFE_NOTE}}</span>
+  <span style="flex:1"></span>
+  <a href="/bank" data-mode-switch="bank" style="color:#d0b272">ONE MAN BANK ↗</a>
+  <a href="/desk" style="color:#ef77b9">研究作战室 ↗</a>
+  <a href="/intelligence" style="color:#7cd4db">全球情报中心 ↗</a>
+  <span class="pill" id="status">加载中…</span>
+</header>
+
+<div id="staleBox"></div>
+<div id="warnBoxTop"></div>
+
+<main>
+  <!-- ============ 左栏：控制台 + 参数 ============ -->
+  <aside>
+    <div class="panel">
+      <h2>控制台</h2>
+      <div class="btns">
+        <button class="primary" id="btnStart">开始回放</button>
+        <button id="btnPause">暂停</button>
+        <button id="btnStep">单步 +1 根</button>
+        <button id="btnFast">跳到末尾</button>
+        <button class="danger wide" id="btnReset">按左侧参数重新回测</button>
+        <button class="wide" id="btnSave">导出结果到 results 文件夹</button>
+      </div>
+      <label>回放节奏（秒 / 每根K线）</label>
+      <input id="interval" type="number" min="0.02" step="0.02" value="0.2">
+      <div class="hint">
+        想快速看完：填 <b>0.02</b>（约 1 分钟跑完 3000 根）<br>
+        想边讲边看：填 <b>1</b>；想慢慢分析：填 <b>0.5</b>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>策略参数<span style="font-weight:400;color:#64748b">改完点最下面的按钮</span></h2>
+
+      <details open>
+        <summary>① 标的与资金</summary>
+        <div class="body">
+          <div class="btns"><button id="btnMarketCrypto" class="primary">加密货币</button><button id="btnMarketUS">美股</button></div>
+          <label>交易标的多选（美股价格为复权历史日线）</label>
+          <div class="chkbar" id="assetBox"></div>
+          <label>初始虚拟资金（<span id="currencyLabel">USDT</span>）</label>
+          <div class="two">
+            <input id="initial_cash" type="number" min="100" step="10000" value="10000">
+            <select id="alloc_method" title="多资产怎么分配资金">
+              <option value="risk_parity">初始逆波动加权（预热期估计）</option>
+              <option value="equal">等权（每个资产一样多）</option>
+              <option value="manual">手动权重（下面填）</option>
+            </select>
+          </div>
+          <label>手动权重（仅“手动”时生效，例如 0.4,0.3,0.2,0.1）</label>
+          <input id="weights" type="text" placeholder="0.4,0.3,0.2,0.1">
+        </div>
+      </details>
+
+      <details>
+        <summary>② 信号：趋势跟随</summary>
+        <div class="body">
+          <div class="two">
+            <div><label>均线类型</label>
+              <select id="ma_type"><option value="sma">简单均线 SMA</option><option value="ema">指数均线 EMA</option></select>
+            </div>
+            <div><label>快 / 慢均线周期</label>
+              <div class="two"><input id="fast" type="number" min="2" step="1" value="20">
+              <input id="slow" type="number" min="3" step="1" value="60"></div>
+            </div>
+          </div>
+          <label><input id="regime_filter" type="checkbox" checked> 大方向过滤：价格必须站在慢均线之上才做多</label>
+        </div>
+      </details>
+
+      <details>
+        <summary>③ 仓位：波动率目标</summary>
+        <div class="body">
+          <label><input id="use_vol_target" type="checkbox" checked> 启用波动率目标仓位</label>
+          <label>关闭时的固定仓位（0—1）</label><input id="fixed_weight" type="number" min="0" max="1" step="0.05" value="0.85">
+          <div class="two">
+            <div><label>目标年化波动率</label><input id="vol_target" type="number" min="0.02" max="3" step="0.05" value="0.45"></div>
+            <div><label>单资产仓位上限</label><input id="max_weight" type="number" min="0.05" max="1" step="0.05" value="0.85"></div>
+          </div>
+          <label>波动率回看天数</label><input id="vol_lookback" type="number" min="5" step="5" value="30">
+          <div class="hint">波动越大，自动买得越少；波动越小，仓位自动放大 —— 这就是“风险预算”。</div>
+        </div>
+      </details>
+
+      <details>
+        <summary>④ 止损：ATR 风控</summary>
+        <div class="body">
+          <label><input id="use_stop" type="checkbox" checked> 启用 ATR 止损</label>
+          <div class="two">
+            <div><label>止损方式</label>
+              <select id="stop_mode">
+                <option value="trailing">移动止损（跟着最高价走）</option>
+                <option value="fixed">固定止损（只防灾难）</option>
+              </select>
+            </div>
+            <div><label>止损距离（倍 ATR）</label><input id="stop_atr" type="number" min="0.5" step="0.5" value="6"></div>
+          </div>
+          <div class="two">
+            <div><label>止损后冷静（天）</label><input id="stop_reentry_days" type="number" min="0" step="1" value="5"></div>
+            <div><label>时间止损（天，0=关）</label><input id="time_stop_days" type="number" min="0" step="5" value="0"></div>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>⑤ 交易成本与调仓</summary>
+        <div class="body">
+          <div class="two">
+            <div><label>手续费（bps）</label><input id="fee_bps" type="number" min="0" step="1" value="6"></div>
+            <div><label>调仓阈值</label><input id="rebalance_band" type="number" min="0" max="0.99" step="0.01" value="0.05"></div>
+          </div>
+          <div class="two">
+            <div><label>固定滑点（bps）</label><input id="slippage_bps" type="number" min="0" step="1" value="4"></div>
+            <div><label>冲击成本系数</label><input id="impact_coef_bps" type="number" min="0" step="1" value="15"></div>
+          </div>
+          <div class="hint">冲击成本 = 系数 × √(下单金额 / 日均成交额)，仓位越大越吃亏，和真实机构一致。</div>
+        </div>
+      </details>
+
+      <details>
+        <summary>⑥ 子账户风控：熔断层</summary>
+        <div class="body">
+          <div class="two">
+            <div><label>回撤熔断线（%）</label><input id="risk_limit_pct" type="number" min="1" step="5" value="35"></div>
+            <div><label>熔断后暂停（天）</label><input id="risk_pause_days" type="number" min="0" step="10" value="90"></div>
+          </div>
+          <div class="two">
+            <div><label>单日亏损熔断（%）</label><input id="daily_loss_limit_pct" type="number" min="0" step="1" value="15"></div>
+            <div><label>熔断后冷静（天）</label><input id="cooldown_days" type="number" min="0" step="1" value="2"></div>
+          </div>
+          <div class="hint">各资产独立判断风控。收盘触发后下一根开盘清仓，暂停按 K 线根数计；重置风控基准不重置累计回撤。</div>
+        </div>
+      </details>
+
+      <button class="primary" id="btnApply" style="width:100%;margin-top:8px">应用参数并重新回测</button>
+      <div class="hint">参数只影响本地虚拟盘的回测与回放，不会向任何交易所发送任何指令。</div>
+    </div>
+  </aside>
+
+  <!-- ============ 右栏：标签页 ============ -->
+  <section>
+    <div class="online-demo-notice"><strong>在线演示 ? 合成数据模拟盘</strong><span>行情为程序生成的教学样例数据，不代表真实市场数据或策略真实收益；每位访客使用独立临时账户，不连接真实交易账户；服务重启或长时间不操作后，体验状态会重置。</span></div>
+    <nav class="tabs">
+      <button data-tab="replay" class="active">回放盘面</button>
+      <button data-tab="perf">绩效分析</button>
+      <button data-tab="robust">稳健性检验</button>
+      <button data-tab="research">论文实验室</button>
+      <button data-tab="sentiment">舆情雷达</button>
+      <button data-tab="collection">采集控制台</button>
+      <button data-tab="trades">交易明细</button>
+      <button data-tab="help">使用帮助</button>
+    </nav>
+
+    <div class="tab hidden" id="tab-collection">
+      <div class="panel collection-hero">
+        <div><span class="collection-eyebrow">HUAICE · DATA COLLECTION DESK</span><h2>淮策采集控制台</h2>
+          <p>把消息变成可追溯的研究数据。公开订阅与本地导入 · 手动启动 · 不接入交易</p></div>
+        <span class="pill" id="collectionState">尚未采集</span>
+      </div>
+      <div class="collection-toolbar">
+        <button class="primary" id="collectionRun">采集所有启用来源</button>
+        <button id="collectionRefresh">刷新状态</button>
+        <button id="downloadCompanyNews">下载 TSLA 公司新闻</button>
+        <button id="collectionRadar">查看共享舆情雷达 →</button>
+        <label class="collection-upload" for="collectionFile">导入 CSV<input id="collectionFile" type="file" accept=".csv,text/csv"></label>
+        <button id="collectionExport">导出研究数据包</button>
+        <span id="collectionNotice" role="status" aria-live="polite">正在读取共享库消息…</span>
+      </div>
+      <div class="collection-stages" id="collectionStages"></div>
+      <div class="collection-layout">
+        <div>
+          <div class="panel"><h2>数据源管理 <span id="collectionSourceCount">0 个来源</span></h2>
+            <div id="collectionSources"></div>
+            <details class="collection-config" open><summary>添加 / 编辑公开 RSS 或 Atom</summary>
+              <form id="collectionSourceForm">
+                <input type="hidden" id="collectionSourceId">
+                <label for="collectionName">来源名称（具体发布机构）</label><input id="collectionName" maxlength="80" placeholder="例如：某机构公开公告" required>
+                <label for="collectionUrl">公开 HTTPS 订阅地址</label><input id="collectionUrl" type="url" maxlength="2048" placeholder="https://…/feed.xml" required>
+                <div class="two"><div><label for="collectionCategory">来源分级（人工先验）</label><select id="collectionCategory">
+                  <option value="official">官方公告 · 1.00</option><option value="minutes">纪要 / 讲话 · 0.85</option>
+                  <option value="media" selected>财经媒体 · 0.65</option><option value="research">研究机构 · 0.55</option>
+                  <option value="analyst">分析师 · 0.40</option><option value="social">社交 · 0.15</option><option value="group">转发 · 0.07</option></select></div>
+                  <div><label for="collectionAsset">未识别时的资产</label><input id="collectionAsset" value="GENERAL" maxlength="20"></div></div>
+                <label for="collectionType">默认内容类型（需人工核验）</label><select id="collectionType"><option value="opinion">观点</option><option value="fact">事实陈述（不等于已验证）</option><option value="policy">政策</option><option value="emotion">情绪</option><option value="promo">推广</option></select>
+                <div class="collection-form-actions"><button type="submit" id="collectionSaveSource">保存来源</button><button type="button" id="collectionClearSource">清空表单</button></div>
+              </form>
+            </details>
+            <p class="hint">只支持公开 HTTPS RSS/Atom；不抓取登录后的私有内容。来源选择应遵守发布方要求。资产识别为关键词启发式，需核验；未确认时使用 GENERAL。</p>
+          </div>
+          <div class="panel"><h2>研究数据包</h2><div id="collectionExports" class="hint">还没有导出</div></div>
+        </div>
+        <div class="collection-main">
+          <div class="panel"><h2>消息证据 <span id="collectionMessageCount">0 条入库</span></h2>
+            <div class="collection-filters"><input id="collectionSearch" aria-label="搜索消息" placeholder="搜索消息、资产或来源…">
+              <select id="collectionFilter" aria-label="筛选消息"><option value="all">所有消息</option><option value="positive">词典正向</option><option value="negative">词典负向</option><option value="neutral">词典中性</option><option value="future">尚不可得</option></select></div>
+            <div class="collection-table-wrap"><table class="collection-table"><thead><tr><th>首次发现（本机时间）</th><th>来源 / 资产</th><th>消息摘要</th><th>词典方向</th></tr></thead><tbody id="collectionMessages"></tbody></table></div>
+            <p class="hint">显示最近 300 条；导出包含完整消息、观察与隔离记录。按资产、发布时间和精确文本去重，不声称已识别独立证据或语义事件。</p>
+          </div>
+          <div class="panel collection-evidence"><h2>消息详情 / 时间证据链</h2><div id="collectionDetail">点击一条消息查看来源、首次抓取、可得时间、权重及半衰期。</div></div>
+        </div>
+      </div>
+      <div class="panel"><h2>任务记录与日志 <span>进程重启后保留</span></h2><div id="collectionTasks"></div></div>
+      <div class="hint collection-disclaimer">说明：首次可得时间 = max（来源标注时间，本控制台首次收到时间）。Atom 仅提供更新时间时会明确标注；两者皆缺失则隔离。全部以 UTC 存储、按本机时区显示。CSV 中历史“抓取时间”只作原始线索，不追溯认定为当时已知。
+        词典评分不能充分理解上下文；来源权重不是正确率，半衰期为设定参数。此库已与“舆情雷达”共享；模拟减仓需在左侧明确选择共享库并启用实验，不发送真实订单。</div>
+    </div>
+
+    <!-- ---------- 回放盘面 ---------- -->
+    <div class="tab" id="tab-replay">
+      <div id="warnBox"></div>
+      <div class="cards">
+        <div class="card"><div class="k">组合净值（已回放）</div><div class="v" id="cEquity">—</div><div class="s" id="cEquityS">—</div></div>
+        <div class="card"><div class="k">累计收益率</div><div class="v" id="cReturn">—</div><div class="s" id="cReturnS">基准 —</div></div>
+        <div class="card"><div class="k">最大回撤</div><div class="v" id="cDD">—</div><div class="s" id="cDDS">—</div></div>
+        <div class="card"><div class="k">夏普比率</div><div class="v" id="cSharpe">—</div><div class="s" id="cSharpeS">—</div></div>
+        <div class="card"><div class="k">当前总仓位</div><div class="v" id="cExpo">—</div><div class="s" id="cExpoS">—</div></div>
+        <div class="card"><div class="k">风险状态</div><div class="v" id="cRisk">—</div><div class="s" id="cRiskS">—</div></div>
+      </div>
+
+      <div class="panel">
+        <h2><span>主图 K 线回放 · 主标的 <span id="mainSymbol">—</span> · <span id="srcLabel">—</span></span><span id="klineDiag" style="font-weight:400;color:#64748b"></span></h2>
+        <canvas id="kchart" height="360"></canvas>
+        <div class="legend">
+          <span><i style="background:#22c55e"></i>上涨</span>
+          <span><i style="background:#ef4444"></i>下跌</span>
+          <span><i style="background:#f59e0b"></i>快均线</span>
+          <span><i style="background:#a78bfa"></i>慢均线</span>
+          <span><i style="background:#f97316"></i>ATR 止损线</span>
+          <span><i style="background:#3b82f6"></i>▲ 买入</span>
+          <span><i style="background:#e879f9"></i>▼ 卖出/止损</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;color:#64748b;font-size:12px;margin-top:6px">
+          <span id="dayLabel">—</span><span id="priceLabel">—</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>组合净值 vs 买入持有基准</h2>
+        <canvas id="echart" height="220"></canvas>
+        <div class="legend">
+          <span><i style="background:#60a5fa"></i>策略净值</span>
+          <span><i style="background:#94a3b8"></i>买入持有基准</span>
+          <span><i style="background:#f87171"></i>回撤（下方）</span>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h2>账户与信号</h2>
+          <div class="row"><span>虚拟现金</span><span id="aCash">—</span></div>
+          <div class="row"><span>持仓总市值</span><span id="aPos">—</span></div>
+          <div class="row"><span>目标仓位 / 实际仓位</span><span id="aTarget">—</span></div>
+          <div class="row"><span>策略信号</span><span id="aSignal">—</span></div>
+          <div class="row"><span>主图快 / 慢均线</span><span id="aMA">—</span></div>
+          <div class="row"><span>主图 ATR / 止损位</span><span id="aATR">—</span></div>
+          <div class="row"><span>年化波动率</span><span id="aVol">—</span></div>
+          <div class="row"><span>累计手续费</span><span id="aFee">—</span></div>
+          <div class="row"><span>成交笔数</span><span id="aTrades">—</span></div>
+          <div class="row"><span>本次事件</span><span id="aEvent">—</span></div>
+          <table style="margin-top:8px">
+            <thead><tr><th>资产</th><th>最新价</th><th>持仓数量</th><th>市值</th><th>仓位</th><th>目标</th></tr></thead>
+            <tbody id="posBody"><tr><td colspan="6" class="muted">等待回放</td></tr></tbody>
+          </table>
+        </div>
+        <div class="panel">
+          <h2>模拟成交记录（最近 60 笔）</h2><div class="hint">点击成交行查看当时的价格信号、成本与舆情背景。舆情未参与交易。</div>
+          <div id="tradeEvidence" class="hint" style="display:none"></div>
+          <div class="scroll">
+            <table>
+              <thead><tr><th>日期</th><th>标的</th><th>方向</th><th>价格</th><th>数量</th><th>金额</th><th>手续费</th><th>说明</th></tr></thead>
+              <tbody id="tradeBody"><tr><td colspan="8" class="muted">暂无成交</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid3" style="margin-top:13px">
+        <div class="panel">
+          <h2>风控事件</h2>
+          <div class="scroll" style="max-height:180px">
+            <table>
+              <thead><tr><th>日期</th><th>资产</th><th>触发回撤</th><th>暂停天数</th></tr></thead>
+              <tbody id="riskEventBody"><tr><td colspan="4" class="muted">暂无风控事件</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>运行日志</h2>
+          <div class="log" id="logBox">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- 绩效分析 ---------- -->
+    <div class="tab hidden" id="tab-perf">
+      <div class="panel">
+        <h2>全周期绩效指标（策略 vs 买入持有基准）<span id="perfNote" style="font-weight:400;color:#64748b"></span></h2>
+        <div class="two" style="grid-template-columns:1fr 1fr;gap:16px">
+          <table><tbody id="perfMetrics"></tbody></table>
+          <table><tbody id="perfMetrics2"></tbody></table>
+        </div>
+        <div class="hint">策略与基准的区别：策略只承担 20% 出头的年化波动，基准（一直满仓持有）要承担 70% 以上的波动。风险调整后收益才是机构考核的重点。</div>
+      </div>
+      <div class="grid3">
+        <div class="panel">
+          <h2>月度收益热力图（%）</h2>
+          <div style="overflow:auto"><table class="hm" id="monthlyTable"></table></div>
+        </div>
+        <div class="panel">
+          <h2>各资产贡献</h2>
+          <div class="scroll" style="max-height:260px">
+            <table>
+              <thead><tr><th>资产</th><th>权重</th><th>期末净值</th><th>盈亏</th><th>收益贡献(点)</th><th>夏普</th><th>回撤</th><th>成交</th></tr></thead>
+              <tbody id="legsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="panel">
+          <h2>滚动夏普比率（90 天窗口）</h2>
+          <canvas id="sharpeChart" height="200"></canvas>
+        </div>
+        <div class="panel">
+          <h2>资产相关性矩阵（日收益）</h2>
+          <div style="overflow:auto"><table class="hm" id="corrTable"></table></div>
+          <div class="hint">相关性越低，组合分散效果越好。全都在 0.8 以上说明“买了 4 个其实只买了 1 个”。</div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>逐年收益</h2>
+        <table><thead><tr id="annualHead"></tr></thead><tbody id="annualBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="tab hidden" id="tab-research">
+      <div class="panel">
+        <h2>论文实验室：同区间策略对照</h2>
+        <p>比较买入持有、趋势固定仓位、趋势波动率目标、趋势波动率目标加 ATR 止损。</p>
+        <div class="hint">使用已应用的标的、资金、均线与成本。实验统一等权子账户，关闭舆情、方向过滤、熔断和时间止损，逐项比较仓位与 ATR 止损。
+        日期取全部资产的交集，排除缺失尾段；指定开始日期之前的数据只预热指标，各方案从现金开始。
+        本页计算所选完整历史区间，不受回放游标限制。未划分独立测试集时应标记为探索实验。</div>
+        <div class="two">
+          <div><label>评估开始日期（可留空）</label><input type="date" id="researchStart"></div>
+          <div><label>截止日期（可留空）</label><input type="date" id="researchEnd"></div>
+        </div>
+        <div class="two">
+          <div><label>区块长度（K 线根数）</label><input type="number" id="researchBlock" min="1" max="120" value="10"></div>
+          <div><label>重采样次数</label><input type="number" id="researchSims" min="100" max="5000" step="100" value="1000"></div>
+        </div>
+        <button class="primary" id="btnResearch">生成对照与复现实验包</button>
+        <span id="researchStatus" style="margin-left:10px"></span>
+      </div>
+      <div class="panel"><h2>绩效对照</h2>
+        <div style="overflow:auto"><table><thead><tr><th>方案</th><th>收益</th><th>年化</th><th>波动</th><th>夏普</th><th>回撤</th><th>手续费</th></tr></thead>
+        <tbody id="researchMetrics"><tr><td colspan="7">尚未生成实验</td></tr></tbody></table></div>
+        <p id="researchPeriod" class="hint"></p>
+      </div>
+      <div class="panel"><h2>逐项增量：区块重采样 95% 区间</h2>
+        <div class="hint">统计量为年化算术平均净日收益差，不是 CAGR 差。包含零表示该区间无法排除零差异；不包含零也不能独立证明策略有效，尚未做多重比较校正。</div>
+        <div style="overflow:auto"><table><thead><tr><th>比较</th><th>收益差</th><th>下界</th><th>上界</th><th>包含零</th></tr></thead><tbody id="researchComparisons"></tbody></table></div>
+        <p id="researchFiles"></p>
+        <details><summary>展开实验配置与数据审计</summary><pre id="researchAudit" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px"></pre></details>
+      </div>
+    </div>
+
+    <!-- ---------- 稳健性检验 ---------- -->
+    <div class="tab hidden" id="tab-robust">
+      <div class="panel">
+        <h2>稳健性检验（判断这套策略是不是"靠运气拟合出来的"）</h2>
+        <div class="hint">以下三项计算量较大，需要几秒钟。它们不是看收益多高，而是看策略在"换个参数、换个时间段、换个运气"之后是否还成立。</div>
+        <button class="primary" id="btnHeavy" style="margin-top:8px">生成稳健性检验（约 10 秒）</button>
+        <span id="robustStatus" style="margin-left:10px;color:#94a3b8"></span>
+      </div>
+      <div class="grid3">
+        <div class="panel">
+          <h2>参数敏感性（夏普比率热力图）</h2>
+          <div style="overflow:auto"><table class="hm" id="gridTable"></table></div>
+          <div class="hint" id="gridNote">观察相邻参数结果是否稳定。热力图不能单独证明不存在过拟合；仍需独立样本外数据和多重比较控制。</div>
+        </div>
+        <div class="panel">
+          <h2>蒙特卡洛检验（600 条随机路径）</h2>
+          <canvas id="mcChart" height="220"></canvas>
+          <div class="kv" id="mcStats" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>滚动前推检验（Walk-Forward：样本外表现）<span id="wfSummary" style="font-weight:400;color:#64748b"></span></h2>
+        <div class="hint">每一折：先在训练区间里挑出表现最好的参数，再用它去跑"从未见过"的样本外区间。</div>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>第几折</th><th>训练区间</th><th>样本外区间</th><th>训练选出参数</th><th>样本外收益</th><th>同期基准</th><th>样本外夏普</th><th>样本外回撤</th><th>波动率</th></tr></thead>
+            <tbody id="wfBody"><tr><td colspan="9" class="muted">点上面的按钮生成</td></tr></tbody>
+          </table>
+        </div>
+        <div class="hint">训练区间里表现最好的参数，在它没见过的样本外区间还赚不赚钱？这是区分"真本事"和"事后诸葛亮"最关键的一步。</div>
+      </div>
+    </div>
+
+    <!-- ---------- 舆情雷达 ---------- -->
+    <div class="tab hidden" id="tab-sentiment">
+      <div class="panel"><h2>TSLA 公司事件 → 模拟决策（规则 v1）</h2>
+        <div class="hint">识别财报、交付、指引、评级、召回与监管事件。显示匹配原句和阻断原因；缺少新行情时不操作，不冒充AI分析。此处不自动启用交易参数。</div>
+        <button id="refreshCompanyEvents">刷新公司事件</button><div id="companyEventStatus" role="status">等待读取具体公司新闻…</div>
+        <button id="companyEventExperiment">运行 TSLA 事件买卖 A/B（先应用TSLA参数）</button><div id="companyEventExperimentResult" class="hint" role="status"></div>
+        <div id="companyEvents" style="max-height:420px;overflow:auto"></div>
+      </div>
+      <div class="panel">
+        <h2>舆情雷达 · 采集控制台共享数据</h2>
+        <div class="hint">
+          默认读取采集控制台的同一消息库，约每 5 秒刷新，只汇总查询时刻已经可得的消息。雷达切换不改变交易；模拟减仓需在左侧单独选择来源、勾选开关并应用参数。
+          它的用途是回答论文里的一个问题——「多源舆情到底有没有预测力」，
+          答案靠统计检验，不靠感觉。
+        </div>
+        <div class="row"><label for="senMode">舆情数据</label><select id="senMode" style="width:auto"><option value="collection">采集控制台共享库</option><option value="sample">教学示例（独立展示）</option></select></div>
+        <div class="row"><label for="senClock">查询时点</label><select id="senClock" style="width:auto"><option value="now">当前时刻</option><option value="replay">回放日期（日终）</option></select></div>
+        <div class="row"><span>舆情市场</span><span><button type="button" id="senAll">全部 / 未分类</button> <button type="button" id="senCrypto">加密货币</button> <button type="button" id="senUS">美股</button></span></div>
+        <div class="row"><span>数据来源</span><span id="senSource">—</span></div>
+        <div class="row"><span>数据区间</span><span id="senMeta">—</span></div>
+        <div class="row"><span>实际查询截止时点</span><span id="senAsof">—</span></div>
+        <div class="row"><span>状态</span><span id="senStatus">加载中…</span></div>
+      </div>
+
+      <div class="panel">
+        <h2>各资产舆情分 z（截止查询时点，窗口 <span id="senWindow">—</span>）</h2>
+        <canvas id="senChart" height="240"></canvas>
+        <div class="legend" id="senLegend"></div>
+        <div class="hint" id="senWindowNote" style="display:none"></div>
+        <div class="hint">z &gt; 0 偏乐观，z &lt; 0 偏悲观。分数接近 0 有两种可能：真的中性，或者证据不足（请看覆盖率）。</div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h2>当前时点快照</h2>
+          <table>
+            <thead><tr><th>资产</th><th>舆情 z</th><th>覆盖率</th><th>有效消息数</th><th>参考乘数</th></tr></thead>
+            <tbody id="senSnapshot"><tr><td colspan="5" class="muted">加载中…</td></tr></tbody>
+          </table>
+          <div class="hint">参考乘数仅用于展示，不控制交易。共享库按精确文本去重，有效消息数不等于独立证据数。本地导入的真实性需核验。</div>
+        </div>
+        <div class="panel">
+          <h2>当天权重最大的一条信息</h2>
+          <div id="senTop"><div class="muted">加载中…</div></div>
+          <div class="hint">权重 = 来源先验 × 内容类型 × 半衰期衰减；共享库使用入库时保存的权重及方向分。点击消息可返回采集控制台查看同一条证据。</div>
+        </div>
+      </div>
+
+      <div class="panel" id="senValidationPanel">
+        <h2>教学样本验证结论（不用于评价采集数据）</h2>
+        <table>
+          <thead><tr><th>持有期</th><th>RankIC(水平 z)</th><th>RankIC(差分 Δz)</th><th>t 值</th><th>怎么读</th></tr></thead>
+          <tbody id="senVerdict"><tr><td colspan="5" class="muted">还没有验证结果</td></tr></tbody>
+        </table>
+        <div class="hint">
+          没有数据？双击 <b>运行舆情快速自检.bat</b>（约 1 分钟）生成结果，再回到这一页刷新。
+          <b>关键</b>：如果「水平 z」的 RankIC 明显为正、而「差分 Δz」接近 0，
+          说明那点预测力来自「分数慢漂移 × 价格趋势」的虚假相关，不是真信息。
+        </div>
+      </div>
+    </div>
+    <!-- ---------- 交易明细 ---------- -->
+    <div class="tab hidden" id="tab-trades">
+      <div class="panel">
+        <h2>已回放交易明细（一笔完整持仓 = 买进到卖出）<span id="rtSummary" style="font-weight:400;color:#64748b"></span></h2>
+        <div class="scroll" style="max-height:620px">
+          <table>
+            <thead><tr><th>资产</th><th>开仓日</th><th>平仓日</th><th>持仓天数</th><th>开仓均价</th><th>平仓价</th><th>数量</th><th>盈亏（账户币种）</th><th>收益率</th><th>离场原因</th></tr></thead>
+            <tbody id="rtBody"><tr><td colspan="10" class="muted">暂无交易</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- 使用帮助 ---------- -->
+    <div class="tab hidden" id="tab-help"><div class="panel doc"><h3>??????</h3><p>??????? Quant ?????????????????????????????????????????????????????????????</p><ul><li>??????????????????????????????????????</li><li>???????????????????????????????? API Key?</li><li>???????????????????????????????</li><li>?????????????????????????????????????</li><li>????????????????????????</li></ul><h3>??????</h3><ol><li>??????????????</li><li>?????????????????????????????</li><li>???????????????????????????</li><li>??????????????????????????????</li></ol></div></div>
+  </section>
+</main>
+
+<footer><div><b>?? Quant ? ????</b></div>??????????????????????????????????????????????????????????????????? API Key??????????????????????????</footer>
+
+<script src="/static/app.js"></script>
+<script src="/static/collection.js"></script>
+<script src="/static/company-events.js"></script>
+</body>
+</html>

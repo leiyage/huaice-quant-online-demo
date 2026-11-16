@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: huaice-quant-online-demo
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-online.txt
+    startCommand: python demo_server.py
+    healthCheckPath: /healthz
+    envVars:
+      - key: DEMO_HOST
+        value: 0.0.0.0
+      - key: DEMO_HTTPS
+        value: "1"

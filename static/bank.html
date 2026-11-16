@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark">
+  <title>ONE PERSON BANK · {{APP_NAME}}</title>
+  <link rel="stylesheet" href="/static/bank.css">
+  <link rel="stylesheet" href="/static/bank-collaboration.css">
+  <link rel="stylesheet" href="/static/mode-switch.css">
+  <script src="/static/mode-switch.js" defer></script>
+  <script type="module" src="/static/bank.js"></script>
+</head>
+<body class="bank-mode">
+  <main class="bank-shell">
+    <header class="bank-header">
+      <a class="bank-brand" href="/bank"><span class="bank-mark">OP</span><span><b>ONE PERSON BANK</b><small>AI-DRIVEN FINANCIAL RESEARCH LABORATORY</small></span></a>
+      <div class="bank-header-right"><span class="bank-clock" id="bank-clock">UTC --:--:--</span><span id="service-status" class="service-pill pending">正在检查服务</span><button id="bank-motion" type="button" aria-pressed="true">环境动效：开启</button><button id="bank-presentation" type="button" aria-pressed="false">16:9 录屏模式</button><button id="bank-fullscreen" type="button">全屏演示</button><a class="mode-switch" href="/" data-mode-switch="terminal">TERMINAL MODE ↗</a></div>
+    </header>
+    <section class="bank-intro"><div><span class="bank-kicker">PRIVATE RESEARCH INSTITUTION / LOCAL ONLY</span><h1>一个人的全球投资研究银行</h1><p>AUTONOMOUS FINANCIAL RESEARCH LAB · 总部只呈现已连接的研究状态，部门入口复用原有业务模块。AI 员工是角色界面，状态由本地工作流驱动；当前未连接大语言模型 Agent。</p></div><div class="bank-live"><i></i><span>本地研究服务</span><b id="engine-status">状态载入中</b></div></section>
+
+    <section class="command-strip" aria-label="系统运行状态">
+      <article class="command-stat"><span>研究引擎</span><b id="engine-mode">--</b><small id="engine-data">等待状态接口</small></article>
+      <article class="command-stat"><span>模拟组合净值</span><b id="portfolio-equity">--</b><small id="portfolio-state">读取本地虚拟盘</small></article>
+      <article class="command-stat"><span>当前回放</span><b id="replay-status">--</b><small id="replay-progress">--</small></article>
+      <article class="command-stat"><span>研究任务</span><b id="task-count">0</b><small id="task-summary">尚无跨部门研究任务</small></article>
+    </section>
+
+    <section class="collaboration-console" aria-label="AI金融员工协作可视化">
+      <div class="collaboration-heading"><div><span class="bank-kicker">AI FINANCIAL TEAM / COLLABORATION</span><h2 id="collaboration-phase">四部门协作网络</h2></div><span class="demo-badge">DEMO 事件 · 规则研究 · 无 LLM</span><button id="run-oil-study" class="primary-button">启动金融研究</button></div>
+      <div class="collaboration-caption"><span id="collaboration-mode">任务日志快照</span><span id="collaboration-actual">等待任务接口</span><button id="collaboration-replay" disabled>重播协作</button><button id="collaboration-pause" disabled>暂停回放</button></div>
+      <p id="collaboration-message" role="status">启动金融研究后，按照任务接口返回的日志展示部门交接。</p><div id="collaboration-progress" class="collaboration-progress" aria-hidden="true"></div>
+    </section>
+    <section class="bank-floor" aria-label="投资银行部门与 AI 员工">
+      <div class="floor-grid" aria-hidden="true"></div><div class="floor-horizon" aria-hidden="true"></div>
+      <svg id="department-transfers" class="department-transfers" aria-hidden="true"></svg>
+      <a class="department intelligence" href="/intelligence" data-department="global-intelligence"><span class="dept-index">01 / INTELLIGENCE</span><span class="dept-icon">⌖</span><h2>全球情报部</h2><p>GLOBAL INTELLIGENCE</p><small>全球事件 · 地理定位 · 蝴蝶效应网络</small><span class="agent-line"><i class="agent-avatar">IA</i><span><b>INTELLIGENCE AGENT</b><small data-agent-status="intelligence">等待任务状态</small></span></span><span class="dept-enter">进入现有情报中心 <b>→</b></span></a>
+      <a class="department risk" href="/intelligence?view=butterfly&amp;scenario=SCENARIO-OIL-001" data-department="risk-management"><span class="dept-index">02 / RISK</span><span class="dept-icon">◇</span><h2>风险管理部</h2><p>RISK MANAGEMENT</p><small>事件传播 · 风险暴露 · 模型证据</small><span class="agent-line"><i class="agent-avatar">RA</i><span><b>RISK AGENT</b><small data-agent-status="risk">等待任务状态</small></span></span><span class="dept-enter">进入传播风险分析 <b>→</b></span></a>
+      <a class="department quant" href="/#research" data-department="quant-research"><span class="dept-index">03 / QUANT</span><span class="dept-icon">∿</span><h2>量化研究部</h2><p>QUANT RESEARCH</p><small>参数研究 · 稳健性检验 · 论文实验室</small><span class="agent-line"><i class="agent-avatar">QA</i><span><b>QUANT AGENT</b><small data-agent-status="quant">等待任务状态</small></span></span><span class="dept-enter">进入原量化研究台 <b>→</b></span></a>
+      <a class="department trading" href="/#replay" data-department="paper-trading"><span class="dept-index">04 / PAPER DESK</span><span class="dept-icon">▤</span><h2>模拟交易部</h2><p>PAPER TRADING</p><small>历史回放 · 模拟持仓 · 交易证据链</small><span class="agent-line"><i class="agent-avatar">TA</i><span><b>TRADING AGENT</b><small data-agent-status="trading">等待任务状态</small></span></span><span class="dept-enter">进入原模拟交易台 <b>→</b></span></a>
+      <div class="floor-center" aria-hidden="true"><span>ONE PERSON</span><b>RESEARCH</b><i>LABORATORY</i></div><div class="floor-scan" aria-hidden="true"></div>
+    </section>
+
+    <section class="research-grid">
+      <article class="research-panel workflow-panel">
+        <div class="panel-heading"><div><span class="bank-kicker">CROSS-DEPARTMENT RESEARCH</span><h2>原油供应冲击研究</h2></div><span class="demo-badge">SIMULATED SCENARIO</span></div>
+        <p class="panel-copy">使用本地 DEMO-008 事件和现有传播引擎。历史资产验证只有在本地存在对应行情数据时才会运行。</p>
+        <div class="flow-track" aria-label="研究任务流程"><span data-flow-stage="intelligence">情报识别</span><i>→</i><span data-flow-stage="risk">传播分析</span><i>→</i><span data-flow-stage="quant">历史验证</span><i>→</i><span data-flow-stage="trading">模拟组合</span><i>→</i><span data-flow-stage="report">研究报告</span></div>
+        <div class="workflow-controls"><button id="resume-oil-study" hidden>继续当前任务</button><span id="workflow-message" role="status">使用既有研究接口；缺少行情时明确跳过验证与组合生成。结果与日志保存在本地任务库。</span></div>
+        <div id="workflow-current" class="workflow-current" aria-live="polite">尚无跨部门研究任务。</div>
+        <details class="task-log"><summary>查看最近任务与运行日志</summary><div id="workflow-list" class="workflow-list"><p>读取任务记录中…</p></div></details>
+        <div id="research-report" class="research-report" hidden></div>
+      </article>
+      <aside class="research-panel side-panel">
+        <div class="panel-heading"><div><span class="bank-kicker">INTELLIGENCE BRIEF</span><h2>最近金融事件</h2></div><span class="demo-badge">DEMO DATA</span></div>
+        <div id="recent-events" class="recent-events"><p>读取本地演示事件…</p></div>
+        <div class="panel-heading portfolio-heading"><div><span class="bank-kicker">PAPER PORTFOLIO</span><h2>模拟组合状态</h2></div><span id="portfolio-badge" class="neutral-badge">只读</span></div>
+        <p id="portfolio-note" class="panel-copy">组合信息直接读取现有量化服务，不发起订单。</p>
+      </aside>
+    </section>
+    <footer class="bank-footer"><span>ONE PERSON BANK <i>·</i> BANK MODE</span><span>部门入口复用现有系统；情景数据与分析结果明确标记，不代表预测。</span><a href="/desk">研究作战室 ↗</a></footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>全球金融情报指挥中心 · {{APP_NAME}}</title>
+  <link rel="stylesheet" href="/static/intelligence/intelligence.css">
+  <link rel="stylesheet" href="/static/intelligence/globe.css">
+  <link rel="stylesheet" href="/static/intelligence/neural.css">
+  <link rel="stylesheet" href="/static/mode-switch.css">
+  <script src="/static/mode-switch.js" defer></script>
+  <script type="module" src="/static/intelligence/app.js"></script>
+</head>
+<body>
+  <div class="command-center">
+    <header class="masthead">
+      <a class="identity" href="/intelligence" aria-label="全球金融情报指挥中心首页">
+        <span class="identity-mark" aria-hidden="true">⌖</span>
+        <span><strong>GLOBAL INTELLIGENCE</strong><span class="identity-sub">COMMAND CENTER <i>/</i> 全球金融情报指挥中心</span></span>
+      </a>
+      <nav aria-label="系统导航"><a href="/bank" data-mode-switch="bank">ONE MAN BANK ↗</a><a href="/">量化研究台 ↗</a><a href="/desk">研究作战室 ↗</a><button id="fullscreen" type="button">⛶ 全屏</button></nav>
+      <div class="utc"><span>UNIVERSAL TIME</span><time id="utc-clock">同步本机时钟…</time></div>
+    </header>
+
+    <div class="mode-banner"><span class="demo-badge">DEMO / 模拟数据</span><span>独立演示空间 · 新闻、事件和分析均为虚构场景，不代表真实市场动态</span><span class="phase-tag">PHASE 03 · IMPACT PROPAGATION MVP</span></div>
+    <section class="telemetry" aria-label="监控状态">
+      <div><span class="metric-label">SYSTEM / 系统状态</span><strong id="system-status"><i class="status-dot"></i>正在初始化</strong></div>
+      <div><span class="metric-label">DATA LINK / 数据连接</span><strong id="data-status">加载本地 DEMO 快照</strong></div>
+      <div><span class="metric-label">SNAPSHOT / 样本日事件 · DEMO</span><strong><b id="event-count">—</b><small> EVENTS</small></strong></div>
+      <div><span class="metric-label">PRIORITY / 高优先级 · DEMO</span><strong><b id="priority-count">—</b><small> FLAGGED</small></strong></div>
+      <div><span class="metric-label">ANALYSIS / 待分析 · DEMO</span><strong><b id="task-count">—</b><small> QUEUED</small></strong></div>
+      <div><span class="metric-label">MARKETS / 行情状态</span><strong class="muted">未接入实时行情</strong></div>
+    </section>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <div id="load-error" class="load-error" role="alert" hidden><strong>无法加载本地演示事件</strong><p id="error-message"></p><button id="retry" type="button">重新加载</button></div>
+
+    <main class="workspace" id="workspace" aria-busy="true">
+      <aside class="panel feed-panel" aria-labelledby="feed-title">
+        <div class="panel-heading"><div><span class="eyebrow">01 / CAPTURE</span><h1 id="feed-title">全球情报信息流</h1><p>GLOBAL INTELLIGENCE FEED</p></div><span class="signal-icon" aria-hidden="true">▂▄▆</span></div>
+        <div class="feed-tools">
+          <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="搜索事件、来源或关联资产" aria-label="搜索事件、来源或关联资产" autocomplete="off"></label>
+          <div class="filter-row"><label>国家 / 地区<select id="country"><option value="all">全部国家 / 地区</option></select></label><label>事件类型<select id="category"><option value="all">全部类型</option></select></label></div>
+          <div class="feed-meta"><span id="visible-count" aria-live="polite">载入事件中…</span><label class="sort-label">排序<select id="sort" aria-label="事件排序"><option value="time">最新捕捉</option><option value="importance">重要程度</option></select></label></div>
+        </div>
+        <div id="event-feed" class="event-feed" aria-label="模拟新闻事件列表"><p class="empty">正在读取本地 DEMO 数据…</p></div>
+        <div class="feed-footer"><span class="status-dot"></span> 本地固定快照 · 无自动抓取 · 无随机新闻</div>
+      </aside>
+
+      <section class="center-column" aria-label="全球事件概览">
+        <div class="panel atlas-panel">
+          <div class="atlas-heading"><div><span class="eyebrow">02 / GLOBAL SITUATIONAL AWARENESS</span><h2>让全球事件，进入同一视野<span>One world. Connected intelligence.</span></h2></div><span class="atlas-number">G / 08</span></div>
+          <div class="atlas-toolbar"><span><i class="status-dot"></i> GLOBAL EVENT GLOBE <small>全球事件定位</small></span><button id="priority-only" type="button" aria-pressed="false">仅高优先级</button></div>
+          <div class="globe-controlbar" aria-label="地球控制"><div><button id="globe-auto" type="button" aria-pressed="true">自动旋转：开启</button><button id="globe-neural" type="button" aria-pressed="true" title="仅娱乐视觉效果，不代表真实金融关联或交易信号">神经网：开启</button></div><div><button id="globe-in" type="button" aria-label="放大地球">＋</button><button id="globe-out" type="button" aria-label="缩小地球">−</button><button id="globe-reset" type="button">定位选中事件</button><button id="globe-mode" type="button">切换二维</button></div></div>
+          <div class="impact-toolbar" aria-label="蝴蝶效应情景控制">
+            <div class="impact-mode-row"><button id="view-mode" type="button" aria-pressed="false">进入 BUTTERFLY VIEW</button><label>模拟案例<select id="impact-scenario" aria-label="选择蝴蝶效应模拟案例"><option value="SCENARIO-OIL-001">中东石油运输通道</option><option value="SCENARIO-RATES-001">美联储利率调整</option><option value="SCENARIO-CHIPS-001">亚洲半导体供应链</option></select></label></div>
+            <div class="impact-network-controls" aria-label="传播网络筛选与播放速度"><label>节点搜索<input id="impact-node-search" type="search" placeholder="名称、类别或地区" aria-label="搜索传播节点"></label><label>风险等级<select id="impact-risk-filter" aria-label="按风险等级筛选节点"><option value="all">全部等级</option><option value="high">高</option><option value="medium">中</option><option value="low">低</option></select></label><label>传播速度 <output id="impact-speed-value" for="impact-speed">1.0×</output><input id="impact-speed" type="range" min="0.25" max="3" step="0.25" value="1" aria-label="传播模拟速度"></label></div><p class="impact-risk-hint">风险等级按规则净影响强度分档：高 ≥ 0.65，中 ≥ 0.35；仅用于 DEMO 场景筛选。</p>
+            <div class="impact-playback"><button id="impact-play" type="button" aria-pressed="false">PLAY</button><button id="impact-pause" type="button">PAUSE</button><button id="impact-back" type="button">STEP BACK</button><button id="impact-forward" type="button">STEP FORWARD</button><button id="impact-reset" type="button">RESET</button><span id="impact-step" role="status">GLOBAL VIEW · DEMO</span></div>
+          </div>
+          <p id="globe-warning" class="globe-warning" role="status" hidden></p>
+          <div id="atlas" class="atlas" aria-label="全球事件定位图"></div>
+          <div class="globe-readout"><span id="globe-status" role="status">初始化地球…</span><span id="globe-help">拖动旋转 / 滚轮缩放 / 点击节点</span></div>
+          <div class="atlas-legend"><span><i class="key negative"></i>风险场景</span><span><i class="key positive"></i>积极场景</span><span><i class="key neutral"></i>待评估场景</span><button id="reset" type="button">重置筛选 ↺</button></div>
+          <div id="location-card" class="location-card"><span class="eyebrow">SELECTED LOCATION</span><strong>选择一条事件以定位</strong><span>列表 · 地理节点 · 时间轴同步联动</span></div>
+          <div class="atlas-footnote">离线简化大陆与海洋纹理，非卫星影像、非精密地图 · 所有事件均为 DEMO · 暂停旋转后按需重绘</div>
+        </div>
+        <section class="panel transmission" aria-labelledby="transmission-title"><div class="section-line"><div><span class="eyebrow">RESEARCH CONTEXT</span><h2 id="transmission-title">潜在市场传导</h2></div><span class="hypothesis-badge">HYPOTHESIS / 假设路径</span></div><div id="transmission-path" class="transmission-path"><p class="empty">选择事件查看场景推演。</p></div><p class="disclaimer">仅演示可能的研究路径，未验证关联或因果关系，不生成交易信号。</p></section>
+      </section>
+
+      <aside id="analysis-panel" class="panel analysis-panel" aria-labelledby="analysis-title">
+        <div class="panel-heading"><div><span class="eyebrow">03 / UNDERSTAND</span><h2 id="analysis-title">AI 事件情报分析</h2><p>AI EVENT INTELLIGENCE</p></div><span class="analysis-glyph" aria-hidden="true">✳</span></div>
+        <div class="analysis-mode"><span class="demo-badge">模拟分析</span><span>预置场景说明 · 未调用大模型</span></div>
+        <div id="analysis-detail" class="analysis-detail" aria-live="polite"><p class="empty">载入事件后展示结构化信息。</p></div>
+        <section id="impact-analysis" class="impact-analysis" aria-labelledby="impact-title" hidden>
+          <div class="impact-panel-heading"><div><span class="eyebrow">SIMULATED SCENARIO / HYPOTHETICAL</span><h3 id="impact-title">BUTTERFLY EFFECT ANALYSIS</h3></div><span id="impact-level" class="demo-badge">DEMO</span></div>
+          <div id="impact-summary" class="impact-summary"></div>
+          <div class="impact-panel-actions"><button id="impact-chain-toggle" type="button" aria-expanded="false">VIEW IMPACT CHAIN</button><button id="impact-evidence-toggle" type="button" aria-expanded="false">VIEW EVIDENCE</button></div>
+          <div id="impact-chain" class="impact-expanded" hidden></div><div id="impact-evidence" class="impact-expanded" hidden></div>
+          <div id="impact-node-detail" class="impact-node-detail" aria-live="polite"></div>
+          <p class="impact-limit">规则驱动的假设推演；影响强度是情景参数，置信度是证据支持字段，两者均未经校准。不是因果结论或真实市场预测，不连接交易逻辑。</p>
+        </section>
+        <div class="analysis-footer">来源可靠性、倾向与置信度均为模拟字段，未经校准，不代表事实正确率或市场预测概率。</div>
+      </aside>
+    </main>
+
+    <section class="panel timeline-panel" aria-labelledby="timeline-title"><div class="timeline-heading"><div><span class="eyebrow">EVENT CHRONOLOGY</span><h2 id="timeline-title">全球市场事件时间轴 <small id="snapshot-date">DEMO</small></h2></div><div class="timeline-controls"><label>样本末端前<select id="time-range" aria-label="时间轴和事件时间范围"><option value="all">全部时段</option><option value="6">最近 6 小时</option><option value="12">最近 12 小时</option></select></label><button id="tour" type="button" aria-pressed="false">事件巡览：关闭</button></div></div><div id="timeline" class="timeline" aria-label="模拟事件时间轴"></div><p class="timeline-note">按捕捉时间排列；时间范围相对固定样本末端计算，不表示当前实时新闻。</p></section>
+    <footer class="page-footer"><span>{{APP_NAME}} <i>/</i> INTELLIGENCE LAB</span><span>DEMO 数据与正式采集库隔离 · 不改变回测或模拟持仓</span><span>LOCAL FIRST <i>·</i> PHASE 03</span></footer>
+    <noscript><p class="load-error">此页面需要启用 JavaScript。原量化系统入口：<a href="/">返回研究台</a>。</p></noscript>
+  </div>
+</body>
+</html>

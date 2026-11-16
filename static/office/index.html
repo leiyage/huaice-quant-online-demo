@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>OFFICE MODE · ONE PERSON BANK</title><link rel="stylesheet" href="/static/office/office.css"><link rel="stylesheet" href="/static/office/office-immersive.css"><link rel="stylesheet" href="/static/office/office-command.css"><link rel="stylesheet" href="/static/mode-switch.css"><script defer src="/static/mode-switch.js"></script><script type="module" src="/static/office/office.js"></script></head>
+<body>
+  <header class="office-header"><a href="/bank" class="brand"><span class="brand-mark">OP</span><span>ONE PERSON BANK<small>AI FINANCIAL RESEARCH LABORATORY</small></span></a><nav aria-label="模式切换"><a href="/" data-mode-switch="terminal">TERMINAL MODE ↗</a><a href="/bank">金融总部</a><span class="selected-mode">OFFICE MODE</span></nav><span id="office-clock">UTC --:--:--</span></header>
+  <main>
+    <section class="office-heading"><div><span class="eyebrow">YOUR PEOPLE. YOUR RESEARCH. YOUR BANK.</span><h1>一个人，管理整间研究银行。</h1><p>唯一的真人管理者是你。点击员工查看任务，点击工作站进入现有研究模块。</p></div><div class="connection"><i></i><span id="office-connection">正在连接任务服务</span><small>角色界面 · 当前未连接 LLM Agent</small></div></section>
+    <section class="office-toolbar" aria-label="办公室控制"><span class="office-label">LIVE OFFICE <b>01</b></span><button id="office-live" class="active">任务快照</button><button id="office-demo">播放协作巡演 <em>DEMO</em></button><span class="navigation-hint">滚轮缩放 · 拖动平移 · 点击员工聚焦</span><details id="office-settings" class="office-settings"><summary>场景设置</summary><div><button id="office-pause" aria-pressed="false">暂停动画</button><button id="office-reduced" aria-pressed="false">低动态</button><button id="office-showcase" aria-pressed="false">SHOWCASE 录屏</button><button id="office-fullscreen">全屏</button></div></details></section>
+    <div class="office-layout">
+      <section class="office-scene" aria-label="等距视角AI虚拟金融办公室">
+        <div class="scene-caption"><span>THE RESEARCH FLOOR</span><span>2.5D / SCENE GRAPHICS · DEMO</span></div>
+        <svg id="office-svg" viewBox="60 -15 1080 650" role="group" tabindex="0" aria-label="四部门等距办公室；滚轮缩放、拖动平移；方向键平移，加减键缩放"></svg>
+        <div class="camera-controls" aria-label="办公室镜头控制"><button id="office-zoom-out" aria-label="缩小办公室">−</button><output id="office-zoom-label">105%</output><button id="office-zoom-in" aria-label="放大办公室">＋</button><button id="office-camera-reset">全局视角</button><button id="office-camera-focus">员工聚焦</button><button id="office-camera-tour" aria-pressed="false">自动巡游</button></div>
+        <button id="office-panel-toggle" class="panel-toggle" aria-expanded="false" aria-controls="office-employee-card">员工信息 ↗</button>
+        <div id="office-tooltip" class="office-tooltip" role="tooltip" hidden></div>
+        <div class="scene-story"><span id="office-provenance" class="status-label">任务接口快照</span><strong id="office-story">办公室正在读取现有任务记录。</strong><small id="office-task-id">不发起订单或回测</small></div>
+      </section>
+      <aside id="office-employee-card" class="employee-panel" aria-label="员工任务详情" hidden><div class="panel-top"><span class="eyebrow">TEAM MEMBER / 01</span><span id="employee-state" class="employee-state">待命</span><button id="office-panel-close" aria-label="收起员工信息">×</button></div><h2 id="employee-name">INTELLIGENCE AGENT</h2><p id="employee-role">全球情报分析师</p><dl><dt>当前任务</dt><dd id="employee-task">正在读取</dd><dt>任务进度</dt><dd id="employee-progress">未提供</dd></dl><details class="employee-more"><summary>工作记录与详情</summary><div id="employee-portrait" class="employee-portrait" aria-hidden="true"></div><p id="employee-department">全球情报部</p><div id="employee-note" class="employee-note">任务状态来自现有服务。场景屏幕为示意图形。</div><h3>最近工作记录</h3><ol id="employee-logs"><li>等待任务记录</li></ol></details><a class="task-link" href="/bank">查看研究任务 →</a><a id="employee-detail" class="detail-link" href="/intelligence">进入全球情报部 <span>↗</span></a></aside>
+    </div>
+    <section id="department-status" class="department-status" aria-label="部门运行状态"></section>
+    <footer><span><i></i> ONE PERSON · FOUR DEPARTMENTS</span><span>任务快照 ≠ 自主 AI 执行　/　屏幕图形为 DEMO</span><span>RESEARCH FLOOR / 02</span></footer>
+  </main>
+</body></html>

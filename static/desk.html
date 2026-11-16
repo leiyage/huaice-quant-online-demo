@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{APP_NAME}} · 研究作战室</title><link rel="stylesheet" href="/static/desk.css"><link rel="stylesheet" href="/static/mode-switch.css"><script src="/static/mode-switch.js" defer></script></head>
+<body><main class="terminal">
+<header class="masthead"><a class="brand" href="/" title="打开原操作台"><span class="ghost-mark">◉</span> 淮策 QUANT <small>+ RESEARCH DESK</small></a><span class="strap">黄淮学院 · 量化研究作战室</span><div class="replay-progress"><span>历史回放</span><progress id="progress" max="100" value="0"></progress><b id="progressText">—</b></div><time id="clock">— UTC</time></header>
+<div class="banner"><span id="connection" role="status">连接本机数据中…</span><span>模拟资金 · 无真实订单 · AI 分析尚未接入</span><a href="/bank" data-mode-switch="bank">ONE MAN BANK ↗</a><a href="/">详细操作台 ↗</a></div>
+<section class="agents" aria-label="八个模块的真实状态">
+<a class="agent" href="/#replay"><h2><i class="icon pink">◉</i> CHIEF <small>策略主控</small></h2><p>price signals · paper positions</p><div class="value" id="chiefValue">—</div><div class="meter"><span id="chiefMeter"></span></div><div class="agent-note" id="chiefNote">等待状态</div></a>
+<a class="agent" href="/#collection"><h2><i class="icon pink">△</i> SCAN <small>消息扫描</small></h2><p>public feeds · first availability</p><div class="value" id="scanValue">—</div><div class="meter"><span id="scanMeter"></span></div><div class="agent-note" id="scanNote">等待共享库</div></a>
+<a class="agent" href="/#collection"><h2><i class="icon white">◕</i> VET <small>证据核验</small></h2><p>timestamps · exact text dedup</p><div class="value" id="vetValue">—</div><div class="meter"><span id="vetMeter"></span></div><div class="agent-note">来源先验不是事实正确率</div></a>
+<a class="agent" href="/#sentiment"><h2><i class="icon red">◧</i> SOCIAL <small>舆情雷达</small></h2><p>lexicon score · not an AI forecast</p><div class="value" id="socialValue">—</div><div class="meter"><span id="socialMeter"></span></div><div class="agent-note" id="socialNote">按当前可得消息汇总</div></a>
+<a class="agent" href="/#replay"><h2><i class="icon blue">●</i> SIZE <small>模拟仓位</small></h2><p>position exposure · virtual capital</p><div class="value" id="sizeValue">—</div><div class="meter"><span id="sizeMeter"></span></div><div class="agent-note" id="sizeNote">—</div></a>
+<a class="agent" href="/#trades"><h2><i class="icon green">⌁</i> FILLS <small>模拟成交</small></h2><p>replayed fills · costs included</p><div class="value" id="fillsValue">—</div><div class="meter"><span id="fillsMeter"></span></div><div class="agent-note" id="fillsNote">—</div></a>
+<a class="agent" href="/#robust"><h2><i class="icon gold">⬟</i> RISK <small>风险控制</small></h2><p>drawdown · stop · cooldown</p><div class="value" id="riskValue">—</div><div class="meter"><span id="riskMeter"></span></div><div class="agent-note" id="riskNote">—</div></a>
+<a class="agent" href="/#collection"><h2><i class="icon purple">♟</i> CRAWLER <small>公开采集</small></h2><p>actual jobs · no invented traffic</p><div class="value" id="crawlerValue">—</div><div class="meter"><span id="crawlerMeter"></span></div><div class="agent-note" id="crawlerNote">等待任务</div></a>
+</section>
+<section class="room" aria-label="动画研究工作室，角色动画仅为视觉装饰">
+<canvas id="roomCanvas" aria-label="研究工作室装饰"></canvas>
+<div class="room-brand"><strong>HC</strong><span>淮 策 量 化</span><small>HUAICE / HUANGHUAI</small></div>
+<div class="market-monitor"><div class="monitor-header"><span id="marketTitle">历史 K 线</span><span id="marketDate">—</span></div><canvas id="candles" aria-label="真实历史K线"></canvas><div class="monitor-ticker" id="ticker">等待本机行情 · 不生成示例价格</div></div>
+<div class="asset-coins" id="assetCoins"></div>
+<div class="clock-terminal"><time id="roomClock">—</time><small>UTC / LOCAL RESEARCH</small></div>
+<div class="room-message"><b>INFORMATION DESK</b><p id="roomMessage">等待共享消息库…</p></div>
+<div class="room-controls"><button id="play">▶ 开始回放</button><button id="pause">Ⅱ 暂停</button><button id="step">+1 根</button><button id="end">历史末尾</button><button id="motion" aria-pressed="true">角色动画：开</button></div>
+<span class="room-caption" id="workstationHint">角色与数据流为视觉装饰 · 工位小屏为同一净值可视化 · 点击进入模块</span>
+<nav class="room-hotspots" aria-label="工作站入口"><a href="/#collection" style="left:23%;top:44%" title="采集控制台">采集工位</a><a href="/#sentiment" style="left:44%;top:44%" title="舆情雷达">舆情工位</a><a href="/#research" style="left:65%;top:44%" title="论文实验室">实验工位</a><a href="/#perf" style="left:23%;top:63%" title="绩效分析">绩效工位</a><a href="/#trades" style="left:44%;top:63%" title="成交证据">成交工位</a><a href="/#robust" style="left:65%;top:63%" title="稳健性检验">风控工位</a></nav>
+</section>
+<section class="balance"><div class="section-head"><span>BALANCE · 模拟净值</span><span id="balanceMeta">—</span></div><canvas id="equity" aria-label="模拟净值"></canvas><div class="balance-number"><small>VIRTUAL BALANCE</small><b id="balanceValue">—</b><span id="balanceReturn">—</span></div></section>
+<section class="bottom-grid"><div class="analysis"><div class="section-head"><span>HUAICE · ANALYSIS</span><span id="analysisMeta">真实历史行情</span></div><canvas id="analysisChart" aria-label="资产历史价格分析"></canvas><div class="trade-heading">MONITOR / 最新模拟成交</div><div id="trades" class="trades">尚未读取数据</div></div>
+<div class="parameters"><div class="section-head"><span>risk_params.py</span><span>EVERY NUMBER IS TRACEABLE</span></div><div class="parameter-tabs"><button class="active" id="showParams">策略参数</button><button id="showMessages">真实消息</button></div><pre id="params">等待本机参数…</pre><div id="messages" class="messages" hidden></div><div class="foot-links"><a href="/#research">论文实验室</a><a href="/#sentiment">舆情雷达</a><a href="/#collection">采集控制台</a><a href="/#help">使用说明</a></div></div></section>
+<footer><span id="updateTime">尚未同步</span><span>本地虚拟盘 · 不连接交易账户 · 不构成投资建议</span><a href="/">返回完整操作界面</a></footer>
+<canvas id="crawlerOverlay" aria-hidden="true"></canvas></main><script src="/static/desk-motion.js"></script><script src="/static/desk.js"></script></body></html>
