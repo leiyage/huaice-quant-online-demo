@@ -838,7 +838,7 @@ class PaperEngine:
         finally:
             self._research_lock.release()
 
-    def research_experiment(self, payload: dict[str, Any]) -> dict[str, Any]:
+    def research_experiment(self, payload: dict[str, Any], output_dir: Path | None = None) -> dict[str, Any]:
         import research_experiments as research
         if not self._research_lock.acquire(blocking=False):
             raise ValueError("已有研究实验正在生成，请稍后重试。")
@@ -851,10 +851,11 @@ class PaperEngine:
                 start=payload.get("start") or None, end=payload.get("end") or None,
                 simulations=_as_int(payload, "simulations", 1000),
                 block=_as_int(payload, "block", 10), seed=20261012)
-            folder = research.save_experiment(experiment, RESULT_DIR / "experiments")
-            return research.experiment_payload(experiment) | {"saved_to": str(folder),
-                "generation": generation, "report_url": f"/api/experiment-file?run={folder.name}&file=report",
-                "archive_url": f"/api/experiment-file?run={folder.name}&file=archive"}
+            experiment_root = (Path(output_dir) if output_dir is not None else RESULT_DIR) / "experiments"
+            folder = research.save_experiment(experiment, experiment_root)
+            return research.experiment_payload(experiment) | {"saved_to": "\u672c\u8bbf\u5ba2\u7684\u4e34\u65f6\u5b9e\u9a8c\u7a7a\u95f4" if output_dir is not None else str(folder),
+                "generation": generation, "report_url": f"/api/demo-experiment-file?run={folder.name}&file=report",
+                "archive_url": f"/api/demo-experiment-file?run={folder.name}&file=archive"}
         finally:
             self._research_lock.release()
 

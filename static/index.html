@@ -48,7 +48,7 @@
     <div class="panel">
       <h2>策略参数<span style="font-weight:400;color:#64748b">改完点最下面的按钮</span></h2>
 
-      <details open>
+      <details>
         <summary>① 标的与资金</summary>
         <div class="body">
           <div class="btns"><button id="btnMarketCrypto" class="primary">加密货币</button><button id="btnMarketUS">美股</button></div>
@@ -155,19 +155,20 @@
 
   <!-- ============ 右栏：标签页 ============ -->
   <section>
-    <div class="online-demo-notice"><strong>在线演示 ? 合成数据模拟盘</strong><span>行情为程序生成的教学样例数据，不代表真实市场数据或策略真实收益；每位访客使用独立临时账户，不连接真实交易账户；服务重启或长时间不操作后，体验状态会重置。</span></div>
+    <div class="online-demo-notice"><strong>在线演示 · 历史行情虚拟盘</strong><span>回测使用仓库内置历史行情（各市场来源与复权口径以数据说明为准），不代表未来收益；舆情样例为教学数据。每位访客使用独立临时账户，不连接真实交易账户；服务重启或长时间不操作后，体验状态会重置。</span></div>
     <nav class="tabs">
       <button data-tab="replay" class="active">回放盘面</button>
       <button data-tab="perf">绩效分析</button>
       <button data-tab="robust">稳健性检验</button>
       <button data-tab="research">论文实验室</button>
       <button data-tab="sentiment">舆情雷达</button>
-      <button data-tab="collection">采集控制台</button>
+      <button data-tab="collection">采集控制台 · 本地版</button>
       <button data-tab="trades">交易明细</button>
       <button data-tab="help">使用帮助</button>
     </nav>
 
     <div class="tab hidden" id="tab-collection">
+      <div class="panel" style="border-color:#d6a24a;background:#fff8e8;color:#59441b"><strong>在线演示边界</strong><p>本页可体验隔离的模拟回测、绩效分析、稳健性检验、论文对照实验及教学示例舆情。采集控制台需要访问来源网站和持久化数据库，暂仅本地运行；下方控制仅作功能说明，不会在公网执行。</p></div>
       <div class="panel collection-hero">
         <div><span class="collection-eyebrow">HUAICE · DATA COLLECTION DESK</span><h2>淮策采集控制台</h2>
           <p>把消息变成可追溯的研究数据。公开订阅与本地导入 · 手动启动 · 不接入交易</p></div>
@@ -361,7 +362,7 @@
         </div>
         <div class="two">
           <div><label>区块长度（K 线根数）</label><input type="number" id="researchBlock" min="1" max="120" value="10"></div>
-          <div><label>重采样次数</label><input type="number" id="researchSims" min="100" max="5000" step="100" value="1000"></div>
+          <div><label>重采样次数</label><input type="number" id="researchSims" min="100" max="500" step="100" value="300"></div>
         </div>
         <button class="primary" id="btnResearch">生成对照与复现实验包</button>
         <span id="researchStatus" style="margin-left:10px"></span>
@@ -427,7 +428,7 @@
           它的用途是回答论文里的一个问题——「多源舆情到底有没有预测力」，
           答案靠统计检验，不靠感觉。
         </div>
-        <div class="row"><label for="senMode">舆情数据</label><select id="senMode" style="width:auto"><option value="collection">采集控制台共享库</option><option value="sample">教学示例（独立展示）</option></select></div>
+        <div class="row"><label for="senMode">舆情数据</label><select id="senMode" style="width:auto"><option value="sample" selected>教学示例（独立展示）</option><option value="collection">本地采集库（在线不可用）</option></select></div>
         <div class="row"><label for="senClock">查询时点</label><select id="senClock" style="width:auto"><option value="now">当前时刻</option><option value="replay">回放日期（日终）</option></select></div>
         <div class="row"><span>舆情市场</span><span><button type="button" id="senAll">全部 / 未分类</button> <button type="button" id="senCrypto">加密货币</button> <button type="button" id="senUS">美股</button></span></div>
         <div class="row"><span>数据来源</span><span id="senSource">—</span></div>

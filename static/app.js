@@ -872,6 +872,17 @@ function switchTab(name) {
   if (name === 'collection' && window.loadCollection) window.loadCollection();
 }
 
+/* Online public demo: core research is enabled; real collection and local DB management remain desktop-only. */
+function markCollectionLocalOnly() {
+  const notice = $('collectionNotice');
+  if (notice) notice.textContent = '\u5728\u7ebf\u4f53\u9a8c\u4e3a\u4fdd\u62a4\u8bbf\u5ba2\u4e0e\u670d\u52a1\u8d44\u6e90\uff0c\u91c7\u96c6\u3001\u5bfc\u5165\u3001\u6765\u6e90\u7ba1\u7406\u548c\u5bfc\u51fa\u4ec5\u672c\u5730\u7248\u53ef\u7528\u3002\u8bf7\u4f7f\u7528\u201c\u8206\u60c5\u96f7\u8fbe → \u6559\u5b66\u793a\u4f8b\u201d\u4f53\u9a8c\u5c55\u793a\u529f\u80fd.';
+  const panel = $('tab-collection');
+  if (!panel) return;
+  panel.querySelectorAll('button, input, select, textarea').forEach((el) => { el.disabled = true; });
+  panel.querySelectorAll('form').forEach((form) => form.addEventListener('submit', (event) => event.preventDefault()));
+}
+markCollectionLocalOnly();
+
 /* ---------------- 事件绑定与初始化 ---------------- */
 $('btnCollectionRiskExperiment').onclick = async function () {
   this.disabled = true;

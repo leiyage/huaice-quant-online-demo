@@ -9,10 +9,11 @@ __pycache__/
 results/
 work/
 data/collection/
-data/*.csv
-data/*.metadata.json
 
-data/*.csv
-data/*.metadata.json
 *.log
 *.pid
+
+# Public demo input datasets (intentionally tracked)
+!data/*.csv
+!data/*.metadata.json
+!sentiment/sample_data/*.csv

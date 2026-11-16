@@ -15,7 +15,7 @@ class OnlineDemoSmokeTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         sock = socket.socket(); sock.bind(("127.0.0.1", 0)); cls.port = sock.getsockname()[1]; sock.close()
-        env = os.environ.copy(); env.update(DEMO_PORT=str(cls.port), DEMO_HTTPS="0", PYTHONDONTWRITEBYTECODE="1")
+        env = os.environ.copy(); env.update(DEMO_PORT=str(cls.port), DEMO_HTTPS="0", DEMO_MAX_SESSIONS="12", PYTHONDONTWRITEBYTECODE="1")
         cls.proc = subprocess.Popen([sys.executable, "demo_server.py"], cwd=ROOT, env=env,
                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(100):
@@ -36,8 +36,8 @@ class OnlineDemoSmokeTest(unittest.TestCase):
         except subprocess.TimeoutExpired: cls.proc.kill(); cls.proc.wait()
 
     @classmethod
-    def request(cls, path, cookie=None, payload=None, origin=None):
-        headers = {"Host": f"127.0.0.1:{cls.port}"}
+    def request(cls, path, cookie=None, payload=None, origin=None, host=None):
+        headers = {"Host": host or f"127.0.0.1:{cls.port}"}
         if cookie: headers["Cookie"] = cookie
         if payload is not None:
             headers["Content-Type"] = "application/json"
@@ -60,7 +60,13 @@ class OnlineDemoSmokeTest(unittest.TestCase):
         _, headers, body = self.request("/api/state", cookie_a); state_a = json.loads(body)
         _, _, body = self.request("/api/state", cookie_b); state_b = json.loads(body)
         self.assertEqual(self.request("/api/collection", cookie_a)[0], 403)
-        self.assertEqual(self.request("/api/control", cookie_a, {"command": "research"})[0], 403)
+        status, _, body = self.request("/api/control", cookie_a, {"command": "research", "simulations": 100, "block": 10})
+        self.assertEqual(status, 200, body.decode("utf-8", errors="replace"))
+        experiment = json.loads(body)
+        self.assertIn("experiment_id", experiment["manifest"])
+        self.assertIn("/api/demo-experiment-file", experiment["archive_url"])
+        self.assertEqual(self.request(experiment["report_url"], cookie_a)[0], 200)
+        self.assertEqual(self.request(experiment["report_url"], cookie_b)[0], 404)
         self.assertEqual(self.request("/api/control", cookie_a, {"command": "step"})[0], 200)
         self.assertEqual(self.request("/api/control", cookie_a, {"command": "step"})[0], 429)
         time.sleep(.3)
@@ -73,18 +79,35 @@ class OnlineDemoSmokeTest(unittest.TestCase):
         self.assertIn("HttpOnly", set_cookie_a)
         self.assertIn("SameSite=Strict", set_cookie_a)
 
-    def test_synthetic_data_is_explicit(self):
+    def test_historical_market_data_and_sample_sentiment_are_explicit(self):
         cookie, _ = self.new_guest()
         status, _, body = self.request("/api/state", cookie)
         self.assertEqual(status, 200)
         state = json.loads(body)
-        self.assertIn("\u5408\u6210", state.get("data_source", ""))
+        self.assertIn("BTC", state.get("data_source", ""))
         status, _, body = self.request("/", cookie)
         self.assertEqual(status, 200)
         html = body.decode("utf-8")
-        self.assertIn("\u5408\u6210\u6570\u636e\u6a21\u62df\u76d8", html)
-        self.assertIn("\u4e0d\u4ee3\u8868\u771f\u5b9e\u5e02\u573a\u6570\u636e", html)
-        self.assertNotIn("Yahoo Finance", html)
+        self.assertIn("\u5386\u53f2\u884c\u60c5\u865a\u62df\u76d8", html)
+        self.assertIn("\u4e0d\u4ee3\u8868\u672a\u6765\u6536\u76ca", html)
+        self.assertIn("\u5404\u5e02\u573a\u6765\u6e90", html)
+        status, _, body = self.request("/api/sentiment?source=sample&window=240", cookie, host="huaice-demo.example")
+        self.assertEqual(status, 200)
+        self.assertTrue(json.loads(body).get("is_sample"))
+        self.assertEqual(self.request("/api/sentiment?source=collection", cookie, host="huaice-demo.example")[0], 403)
+
+    def test_full_robustness_report_and_research_limits(self):
+        cookie, _ = self.new_guest()
+        status, _, body = self.request("/api/report?heavy=1", cookie)
+        self.assertEqual(status, 200)
+        report = json.loads(body)
+        self.assertTrue(report.get("heavy"))
+        self.assertTrue(report.get("grid"))
+        self.assertTrue(report.get("walk_forward"))
+        self.assertTrue(report.get("monte_carlo"))
+        status, _, body = self.request("/api/control", cookie,
+                                       {"command": "research", "simulations": 600, "block": 10})
+        self.assertEqual(status, 400)
 
     def test_origin_and_health(self):
         self.assertEqual(self.request("/healthz")[0], 200)
